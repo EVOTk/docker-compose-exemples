@@ -1,0 +1,40 @@
+version: "2.1"
+services:
+  plex:
+    image: ghcr.io/linuxserver/plex
+    container_name: plex
+    network_mode: host
+# Decommenter les 2 lignes suivantes pour que watchtower surveille ce conteneur
+#    labels:
+#      - com.centurylinklabs.watchtower.enable=true
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - VERSION=latest
+      - UMASK_SET=022
+    volumes:
+      - /volume1/docker/plex/config:/config
+      - /volume1/docker/plex/transcode:/transcode
+      - /volume1/media/music:/data/music
+      - /volume1/media/movies:/data/movies
+      - /volume1/media/tvshow:/data/tvshow
+# Decommenter les 2 lignes suivantes pour activer le transcodage matériel ( si NAS compatible )
+#    devices:
+#      - /dev/dri:/dev/dri
+    restart: unless-stopped
+
+  tautulli:
+    image: ghcr.io/linuxserver/tautulli
+    container_name: tautulli
+    network_mode: host
+# Decommenter les 2 lignes suivantes pour que watchtower surveille ce conteneur
+#    labels:
+#      - com.centurylinklabs.watchtower.enable=true
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Paris
+    volumes:
+      - /volume1/docker/tautulli/config:/config
+      - /volume1/docker/plex/config/Library/Application Support/Plex Media Server/Logs:/logs
+    restart: unless-stopped
