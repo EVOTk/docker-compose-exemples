@@ -1,0 +1,21 @@
+version: "2.3"
+services:
+  watchtower:
+    container_name: watchtower
+    image: containrrr/watchtower:amd64-latest
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Paris
+      - WATCHTOWER_SCHEDULE= 0 0 6 * * *
+      - WATCHTOWER_LABEL_ENABLE=true
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_REMOVE_VOLUMES=true
+      - WATCHTOWER_NOTIFICATIONS_LEVEL=debug
+#Les 3 lignes dessous sont a utiliser pour être notifié par Gotify
+#      - WATCHTOWER_NOTIFICATIONS=gotify
+#      - WATCHTOWER_NOTIFICATION_GOTIFY_URL=https://gotify.ndd.fr
+#      - WATCHTOWER_NOTIFICATION_GOTIFY_TOKEN=
+      - WATCHTOWER_ROLLING_RESTART=true
+      - WATCHTOWER_LIFECYCLE_HOOKS=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
