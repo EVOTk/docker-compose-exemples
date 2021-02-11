@@ -11,10 +11,8 @@ services:
      - net.ipv6.conf.all.disable_ipv6=0
     security_opt:
      - label:disable
-    labels:
-     - com.centurylinklabs.watchtower.enable=true
-#     - com.centurylinklabs.watchtower.lifecycle.pre-update="/scripts/stop_docker_download.sh"
-#     - com.centurylinklabs.watchtower.lifecycle.post-update="/scripts/start_docker_download.sh"
+ #   labels:
+ #    - com.centurylinklabs.watchtower.enable=true
     environment:
      - PUID=1000
      - PGID=100
