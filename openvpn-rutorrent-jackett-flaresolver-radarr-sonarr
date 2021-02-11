@@ -1,0 +1,123 @@
+version: '3'
+      
+services: 
+  vpn:
+    image: dperson/openvpn-client:latest
+    container_name: vpn
+    restart: unless-stopped
+    cap_add:
+     - NET_ADMIN
+    sysctls:
+     - net.ipv6.conf.all.disable_ipv6=0
+    security_opt:
+     - label:disable
+    labels:
+     - com.centurylinklabs.watchtower.enable=true
+#     - com.centurylinklabs.watchtower.lifecycle.pre-update="/scripts/stop_docker_download.sh"
+#     - com.centurylinklabs.watchtower.lifecycle.post-update="/scripts/start_docker_download.sh"
+    environment:
+     - PUID=1000
+     - PGID=100
+     - TZ=Europe/Paris
+    networks:
+     - vpn-network
+    dns:
+     - 84.200.69.80
+     - 8.8.8.8
+     - 9.9.9.9
+    ports :
+     - 8585:80 #rutorrent
+     - 9117:9117 #jackett
+     - 7878:7878 #radarr
+     - 8989:8989 #sonarr
+     - 8191:8191 #flaresolver
+    devices:
+     - /dev/net/tun:/dev/net/tun
+    expose:
+     - "8080"
+    volumes:
+     - /volume1/docker/vpn/config:/vpn
+     - /volume1/docker/vpn/scripts:/scripts
+    command: '-f "" -r 192.168.0.0/24'
+    healthcheck:
+      test: ["CMD", "curl", "-Ss", "ifconfig.co"]
+      interval: 60s
+      timeout: 15s
+      
+  sonarr:
+    image: ghcr.io/linuxserver/sonarr:preview
+    container_name: sonarr
+    network_mode: "service:vpn"
+#    labels:
+#      - com.centurylinklabs.watchtower.enable=true
+    environment:
+      - PUID=1000
+      - PGID=100
+      - TZ=Europe/Paris
+    volumes:
+      - /volume1/docker/sonarr/config:/config
+      - /volume1/docker/rutorrent-vpn/downloads:/downloads
+      - /volume1/Mes Séries:/tv
+    restart: unless-stopped
+    
+  radarr:
+    image: ghcr.io/linuxserver/radarr:nightly
+    container_name: radarr
+    network_mode: "service:vpn"
+#    labels:
+#      - com.centurylinklabs.watchtower.enable=true
+    environment:
+      - PUID=1000
+      - PGID=100
+      - TZ=Europe/Paris
+    volumes:
+      - /volume1/docker/radarr/config:/config
+      - /volume1/docker/rutorrent-vpn/downloads:/downloads
+      - /volume1/Mes Films:/movies
+    restart: unless-stopped
+      
+    
+  jackett:
+    image: ghcr.io/linuxserver/jackett
+    container_name: jackett
+    network_mode: "service:vpn"
+#    labels:
+#      - com.centurylinklabs.watchtower.enable=true
+    environment:
+      - PUID=1000
+      - PGID=100
+      - TZ=Europe/Paris
+    volumes:
+      - /volume10/docker/jackett/config:/config
+      - /volume10/docker/jackett/downloads:/downloads
+    restart: unless-stopped
+    
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr
+    container_name: flaresolverr
+    network_mode: "service:vpn"
+#    labels:
+#      - com.centurylinklabs.watchtower.enable=true
+    environment:
+      - LOG_LEVEL=info
+    restart: unless-stopped
+    
+  rutorrent:
+    image: ghcr.io/linuxserver/rutorrent:latest
+    container_name: rutorrent-vpn
+    restart: unless-stopped
+    network_mode: "service:vpn"
+#    labels:
+#      - com.centurylinklabs.watchtower.enable=true
+    environment:
+     - PUID=1000
+     - PGID=100
+     - TZ=Europe/Paris
+    volumes:
+     - /volume1/docker/rutorrent-vpn/config:/config
+     - /volume1/docker/rutorrent-vpn/downloads:/downloads
+        
+networks:
+  vpn-network:
+    external:
+      name: vpn-network
